@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <iostream>
 
 // **** Nondeterministic finite automaton ****
 // The template parameter is the input alphabet of the automaton.
@@ -18,6 +17,7 @@ private:
 		T label;
 		int to;
 		Transition(const T &l, int t): label(l), to(t) { };
+		bool operator==(const Transition &rhs) const { return (label == rhs.label) && (to == rhs.to); };
 	} Transition;
 
 	int n_states;
@@ -40,6 +40,7 @@ private:
 	bool kosaraju_count(const std::vector<std::vector<int>> &graph, std::vector<bool> &seen, int v);
 
 public:
+
 	Nfa(int q) : n_states(q), n_scc(-1), initial_states_(q), final_states_(q), transitions(q) { };
 
 	inline int num_states() const { return n_states; };
@@ -53,6 +54,10 @@ public:
 	inline bool is_final(int i)   const { return final_states_[i]; };
 
 	inline void add_transition(int from, const T &label, int to);
+	inline bool is_transition(int from, const T &label, int to) const
+	{
+		return std::find(transitions[from].begin(), transitions[from].end(), Transition(label, to)) != transitions[from].end();
+	};
 
 	// Compute the number of strongly connected components. 
 	// Takes linear time, or constant time if add_transition 

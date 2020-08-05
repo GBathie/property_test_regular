@@ -15,10 +15,18 @@ To compile the example, use  `make example`.
 ### Tests
 Here may be found the results of the `tests.cpp` program when compiled and run on my computer.
 
+Results for the NFA for `0^*1^*`:
+![01star](./figures/time01.png "Results for 0^*1^*")
+
+Results for a random NFA with `10` states:
+![random_nfa](./figures/time_random.png "Results for a random NFA with 10 states")
+
+To compile the test program, run `make tests`.
+Run the resulting `./tests` file, and then run `python generate_graphs.py` to generate graphs as seen above.
 
 ---
 ### Warnings
-When using functions `Nfa.accepts` an `property_test` on literal strings 
+When using functions `Nfa::accepts` an `property_test` on literal strings 
 (that is characters in between double quotes, e.g. `"Hello world"`), 
 one must either convert the literals to `std::strings` explicitely
 or explicitely call the functions with the template argument  `Container = std::string`,

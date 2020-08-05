@@ -8,47 +8,39 @@
 #include "nfa.h"
 
 /***** Declarations *****/
-template <typename T> 
-// wrapper for samples in the property testing algorithm.
+// wrapper class for samples in the property testing algorithm.
 class Sample;
 
 // Tests efficiently whether a fragment is `nfa`-blocking.
 // Subroutine for property_test.
-template <typename T> 
-bool is_blocking(std::vector<Sample<T>> &fragment, const Nfa<T> &nfa, int n);
+template <typename T>
+bool is_blocking(std::vector<Sample> &fragment, const Nfa<T> &nfa, int n);
 
 // Main algorithm: `eps`-Property tester for regular languages.
 // returns `true` if `u` belongs to L(automaton),
 // or `false` with probability at least `1 - error_proba`
-// if the edit distance of `u` to L(automaton) is at most `eps * |u|`.
-// In the last case, it may return `true` or `false`.
+// if the edit distance of `u` to L(automaton) is at least `eps * |u|`.
+// If none of the above holds (i.e. 0 < dist(u, L) < eps * |u|)
+// it may return `true` or `false`.
+// Details on how the algorithm works may be found in [Bathie and Starikovskaya, 2020]
 template <typename T, typename Container = std::vector<T>>
 bool property_test(Nfa<T> &automaton, const Container &u, double eps, double error_proba);
 
 /***** Implementation *****/
-template <typename T> 
 class Sample
 {
 public:
-	int start_index;
-	std::vector<T> letters;
-	inline int size() const { return letters.size(); };
-	Sample(int i, const std::vector<T> &s): start_index(i), letters(s) { };
-
-	template <typename Container = std::vector<T>>
-	static Sample<T> from_position_length(int pos, int length, const Container &source)
-	{
-		std::vector<T> v(source.begin() + pos, source.begin() + pos + length);
-		return Sample<T>(pos, v);
-	}
+	int start;
+	int end;
+	Sample(int s, int length): start(s), end(s + length) { };
 };
 
-template <typename T>
-bool is_blocking(std::vector<Sample<T>> &fragment, const Nfa<T> &nfa, int n)
+template <typename T, typename Container = std::vector<T>>
+bool is_blocking(std::vector<Sample> &fragment, const Container &u, const Nfa<T> &nfa, int n)
 {
 	std::sort(fragment.begin(), 
 			  fragment.end(), 
-			  [](const Sample<T> &s, const Sample<T> &t) { return s.start_index < t.start_index; });
+			  [](const Sample &s, const Sample &t) { return s.start < t.start; });
 	std::vector<bool> reachable = nfa.initial_states(); 
 
 	int frag_i = 0, index = 0;
@@ -61,15 +53,15 @@ bool is_blocking(std::vector<Sample<T>> &fragment, const Nfa<T> &nfa, int n)
 			reachable = nfa.star_reach(reachable);
 			break;
 		}
-		const Sample<T> &cur_sample = fragment[frag_i];
-		if (index < cur_sample.start_index)
+		const Sample &cur_sample = fragment[frag_i];
+		if (index < cur_sample.start)
 		{
 			reachable = nfa.star_reach(reachable);
-			index = cur_sample.start_index;
+			index = cur_sample.start;
 		}
-		else if (index < cur_sample.start_index + cur_sample.size())
+		else if (index < cur_sample.end)
 		{
-			reachable = nfa.letter_reach(reachable, cur_sample.letters[index - cur_sample.start_index]);
+			reachable = nfa.letter_reach(reachable, u[index]);
 			++index;	
 		}
 		else
@@ -91,19 +83,20 @@ bool property_test(Nfa<T> &automaton, const Container &u, double eps, double err
 {
 	if (error_proba == 0 || eps == 0)
 		throw std::logic_error("property_test: eps and error_proba must be non-zero.");
+	
 	int n = u.size();
 	int k = automaton.num_scc();
 	int m = automaton.num_states();
 	double beta = eps/ (6*m);
 	int gamma = std::ceil(2/ beta);
 
-	if (n < 12*gamma*std::ceil(std::log(gamma)))
+	if (n < std::max(3*gamma*std::ceil(std::log(gamma)), std::ceil(k / beta)))
 		return automaton.accepts(u);
 
-	std::vector<Sample<T>> fragment;
+	std::vector<Sample> fragment;
 	int lambda = std::ceil(2 * std::log(6 * k * std::pow(2, k) / error_proba) / beta);
 	for (int i = 0; i < lambda; ++i)
-		fragment.push_back(Sample<T>::from_position_length(rand() % n, 1, u));
+		fragment.push_back(Sample(rand() % n, 1));
 
 	for (int i = 0; i < std::ceil(std::log(gamma)); ++i)
 	{
@@ -112,9 +105,9 @@ bool property_test(Nfa<T> &automaton, const Container &u, double eps, double err
 						 * gamma * std::ceil(std::log(gamma)) / l);
 		for (int j = 0; j < alpha; ++j)
 		{
-			fragment.push_back(Sample<T>::from_position_length(rand() % n, 2*l, u));		
+			fragment.push_back(Sample(rand() % n, 2*l));		
 		}
 	}
 
-	return !(is_blocking<T>(fragment, automaton, n));
+	return !(is_blocking(fragment, u, automaton, n));
 }

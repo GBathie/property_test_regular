@@ -1,4 +1,4 @@
-CXXFLAGS = -O2 -std=c++11 -Wall -Wextra -Werror
+CXXFLAGS = -O2 -std=c++14 -Wall -Wextra -Werror
 
 all: tests example
 
