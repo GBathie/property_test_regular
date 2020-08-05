@@ -13,13 +13,18 @@ To compile the example, use  `make example`.
 
 ---
 ### Tests
-Here may be found the results of the `tests.cpp` program when compiled and run on my computer.
+Here may be found the results of the `tests.cpp` program when compiled and ran on my computer.
 
 Results for the NFA for `0^*1^*`:
 ![01star](./figures/time01.png "Results for 0^*1^*")
 
 Results for a random NFA with `10` states:
 ![random_nfa](./figures/time_random.png "Results for a random NFA with 10 states")
+
+As expected, the property testing algorithm is much faster than the exact algorithm 
+when the input is large, and tends to a constant time complexity.
+The runtime is not constant because overlapping queries are made only once,
+and the larger the input is, the less overlapping queries there are, therefore there are more queries and the runtime increases.
 
 To compile the test program, run `make tests`.
 Run the resulting `./tests` file, and then run `python generate_graphs.py` to generate graphs as seen above.
