@@ -104,10 +104,6 @@ int main()
 	benchmark_time("time01.txt", zero_star_one_star, 50, 4'000'000);
 	auto nfa1 = random_nfa(10, .3, .1);
 	benchmark_time("time_random.txt", nfa1, 50, 10'000'000);
-	// benchmark_precision(zero_star_one_star, 1000, 10'000, 0.49, 23);
-	// benchmark_precision(nfa1, 10, 50'000, 0.3, 0.5);
-	// auto nfa2 = random_nfa(50, .1, .1);
-	// benchmark_precision(nfa2, 10, 20'000, 0.3, 0.5);
 
 	return 0;
 }
