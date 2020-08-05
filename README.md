@@ -23,8 +23,9 @@ Results for a random NFA with `10` states:
 
 As expected, the property testing algorithm is much faster than the exact algorithm 
 when the input is large, and tends to a constant time complexity.
-The runtime is not constant because overlapping queries are made only once,
-and the larger the input is, the less overlapping queries there are, therefore there are more queries and the runtime increases.
+The runtime is not exactly constant because letters that appear in multiple samples
+are only queried once. The larger the input is, the less overlapping queries there are (on average), 
+and therefore the number of queries (and the runtime) increases slightly.
 
 To compile the test program, run `make tests`.
 Run the resulting `./tests` file, and then run `python generate_graphs.py` to generate graphs as seen above.
